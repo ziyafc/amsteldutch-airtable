@@ -1,124 +1,98 @@
-# Cross-Base Relationships & Architecture
-
-## Base Comparison
-
-| Feature | Amstel Dutch | Expat Student | !!Base for App!! | Untitled |
-|---------|--------------|---------------|------------------|----------|
-| **Purpose** | Product launches | Course mgmt | Main app | Dev/staging |
-| **Tables** | 1 | 6 | 20 | 5 |
-| **AI Fields** | No | Yes (Course Summary) | Yes (Writing Feedback) | No |
-| **Chat System** | No | No | Yes | No |
-| **Test System** | No | Yes (Assessments) | Yes (Multi-modal) | No |
-| **Progress Tracking** | No | Yes (Enrollment-based) | Yes (Task-based) | Yes (Basic) |
-
+---
+tags:
+  - diagram
 ---
 
-## Data Model Patterns
+# Cross-Base Relationships
 
-### User-Course Enrollment Pattern
+> Base'ler arası yapısal karşılaştırma.
 
-Used in both Expat Student and Base for App:
+## 🔄 Table Equivalents
+
+| Concept | Expat Student | Main App | Dev/Staging |
+|---------|--------------|----------|-------------|
+| Users | [[bases/expat-student/tables/students\|Students]] | [[bases/main-app/tables/users\|Users]] | [[bases/dev-staging/tables/users\|Users]] |
+| Courses | [[bases/expat-student/tables/courses\|Courses]] | [[bases/main-app/tables/courses\|Courses]] | [[bases/dev-staging/tables/courses\|Courses]] |
+| Enrollment | [[bases/expat-student/tables/enrollments\|Enrollments]] | [[bases/main-app/tables/course-enrollment\|Course_enrollment]] | - |
+| Progress | - | [[bases/main-app/tables/task-progress\|Task Progress]] | [[bases/dev-staging/tables/progress\|Progress]] |
+| Content | - | [[bases/main-app/tables/lessons\|Lessons]] + [[bases/main-app/tables/tasks\|Tasks]] | [[bases/dev-staging/tables/lessons\|Lessons]] |
+| Assessment | [[bases/expat-student/tables/assessments\|Assessments]] | [[bases/main-app/tables/writing-tests\|WRITING]] + [[bases/main-app/tables/audio-tests\|AUDIO]] | - |
+
+## 📊 Shared Patterns
+
+### 1. User-Course Junction
+
+Her LMS base'inde var:
 
 ```
-Users <--[many-to-many]--> Courses
-           |
-           +-- via Junction Table (Enrollments / Course_enrollment)
-                   |
-                   +-- Start Date
-                   +-- End Date  
-                   +-- Progress %
-                   +-- Status
+Users ◄───► Junction Table ◄───► Courses
+              │
+              ├─ Start/End dates
+              ├─ Progress %
+              └─ Status
 ```
 
-### Hierarchical Content Pattern
+**Implementations:**
+- [[bases/expat-student/tables/enrollments|Expat: Enrollments]]
+- [[bases/main-app/tables/course-enrollment|Main: Course_enrollment]]
+
+### 2. Content Hierarchy
 
 ```
 Courses
-   +-- Lessons/Modules
-         +-- Tasks/Activities
-               +-- Questions/Assessments
+   └── Lessons/Modules
+         └── Tasks/Activities
+               └── Questions
 ```
 
-### Progress Tracking Pattern
+**Depth by base:**
+| Base | Depth | Levels |
+|------|-------|--------|
+| Expat | 2 | Courses → Assessments |
+| Main | 4 | Courses → Lessons → Tasks → Questions |
+| Dev | 2 | Courses → Lessons |
+
+### 3. Progress Tracking
 
 ```
-User + Task/Lesson = Progress Record
-   |
-   +-- Completed (checkbox)
-   +-- Completed At (timestamp)
-   +-- Notes (feedback)
+User + Content Item = Progress Record
 ```
 
----
+**Implementations:**
+- [[bases/main-app/tables/task-progress|Main: Task Progress]] (granular)
+- [[bases/dev-staging/tables/progress|Dev: Progress]] (simple)
+- [[bases/expat-student/tables/enrollments|Expat: Enrollments]] (embedded)
 
-## Common Field Types Used
+## 🤖 AI Usage
 
-| Type | Usage |
-|------|-------|
-| `singleLineText` | Names, IDs, short text |
-| `multilineText` | Notes, descriptions |
-| `singleSelect` | Status fields (Todo/Progress/Done) |
-| `multipleRecordLinks` | Table relationships |
-| `lookup` | Derived values from linked records |
-| `rollup` | Aggregations (counts, sums) |
-| `formula` | Calculated fields |
-| `checkbox` | Boolean flags (completed, verified) |
-| `date` / `dateTime` | Scheduling, tracking |
-| `autoNumber` | Sequential IDs |
-| `aiText` | AI-generated content |
-| `multipleAttachments` | Files, images, videos |
+| Base | AI Field | Purpose |
+|------|----------|--------|
+| [[bases/expat-student/tables/courses\|Expat: Courses]] | Course Summary | Marketing text |
+| [[bases/expat-student/tables/courses\|Expat: Courses]] | Suggested Improvement | Analytics |
+| [[bases/main-app/tables/writing-tests\|Main: WRITING_TESTS]] | AI assist | Dutch correction |
 
----
-
-## Status Workflow Standards
-
-Most tables use consistent status values:
+## 📌 Navigation Map
 
 ```
-+----------+     +-------------+     +--------+
-|   Todo   | --> | In Progress | --> |  Done  |
-|  (Red)   |     |  (Yellow)   |     |(Green) |
-+----------+     +-------------+     +--------+
+                     README
+                        │
+        ┌───────────────┼───────────────┐
+        │               │               │
+        ▼               ▼               ▼
+    bases/          reference/      diagrams/
+        │               │               │
+   ┌────┼────┐    ┌────┼────┐    ┌───┴───┐
+   │    │    │    │    │    │    │       │
+   ▼    ▼    ▼    ▼    ▼    ▼    ▼       ▼
+amstel expat main dev  types status overview relationships
+   │    │    │    │    api-ids patterns
+   │    │    │    │
+   ▼    ▼    ▼    ▼
+tables/ tables/ tables/ tables/
 ```
 
----
+## 📌 Related
 
-## API Usage Notes
-
-### Base IDs
-
-```javascript
-const BASES = {
-  AMSTEL_DUTCH: 'app8UfvWnkJWFKUpt',
-  EXPAT_STUDENT: 'appAe8WSfkPmp8P8I',
-  MAIN_APP: 'apptQsmAbTKpeV2z0',
-  DEV_STAGING: 'appg5FhzhGeUrEjve'
-};
-```
-
-### Key Table IDs (Main App)
-
-```javascript
-const TABLES = {
-  USERS: 'tbl1r15vHh4nW3Xjo',
-  COURSES: 'tblmSLMsyy2GxPVO7',
-  LESSONS: 'tblBH8VGXZ4wGKXpH',
-  TASKS: 'tblSyEAVZAYExNBSu',
-  PROGRESS: 'tblfGcMDhdUQux6KH',
-  WRITING_TESTS: 'tblyBQSYVCDJTb6Ij',
-  AUDIO_TESTS: 'tblx0byituDy8t15y',
-  CHATS: 'tblBfmTN20XWC4sU3',
-  MESSAGES: 'tblzuVXq93AxyJvne',
-  ENROLLMENT: 'tbl8XWGbHeT6JoVIM'
-};
-```
-
----
-
-## Recommended Integrations
-
-1. **User Authentication:** Magic link field in Users table
-2. **Progress Sync:** Task Progress -> User.Progress relationship
-3. **Communication:** Chats -> Messages -> Users flow
-4. **Assessment:** WRITING_TESTS / AUDIO_TESTS -> AI feedback loop
-5. **Scheduling:** Events -> Courses -> Users notification chain
+- [[diagrams/overview|Architecture Overview]]
+- [[reference/patterns|Common Patterns]]
+- [[reference/api-ids|API IDs]]
