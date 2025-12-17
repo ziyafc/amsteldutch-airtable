@@ -1,84 +1,133 @@
-# Amstel Dutch - Nasıl Çalışır?
+# 1. Giriş - Temel Kavramlar
 
-> Bu doküman, teknik bilgi gerektirmeden sistemin nasıl çalıştığını anlatır.
-
-## 🎯 Bu Sistem Ne İçin?
-
-Bu sistem, **Hollandaca dil eğitimi** veren bir platformun veritabanıdır. 
-
-Düşün ki bir dil okulu açtın:
-- Öğrencilerin var
-- Kursların var (A1, A2, B1 seviyeleri)
-- Her kursta dersler var
-- Her derste ödevler var
-- Öğrenciler ödev yapıyor, sen kontrol ediyorsun
-
-Tüm bunları Excel'de tutmak yerine, bu sistem her şeyi **organize ve bağlı** tutuyor.
+Önce bazı temel kavramları öğrenelim. Bunları anlamadan devam etmek zor olur.
 
 ---
 
-## 📚 4 Farklı Veritabanı Var
+## 📦 Veritabanı Nedir?
 
-Sistemde 4 ayrı "base" (veritabanı) var. Her biri farklı amaç için:
+Veritabanı, **bilgileri düzenli şekilde sakladığımız bir yerdir**.
 
-| Veritabanı | Ne İçin? | Detay |
-|------------|---------|-------|
-| [[bases/main-app/ACIKLAMA\|Ana Uygulama]] | Asıl çalışan sistem | 20 tablo, tüm özellikler |
-| [[bases/expat-student/ACIKLAMA\|Expat Student]] | Farklı bir kurs yönetim sistemi | 6 tablo, AI özellikleri |
-| [[bases/amstel-dutch/ACIKLAMA\|Amstel Dutch]] | Basit ürün takibi | 1 tablo, çok basit |
-| [[bases/dev-staging/ACIKLAMA\|Test Ortamı]] | Geliştirme için | Ana sistemin küçük kopyası |
+### Günlük Hayattan Örnek
 
-**En önemlisi [[bases/main-app/ACIKLAMA|Ana Uygulama]]** - asıl çalışan sistem bu.
+Telefonundaki **Rehber** uygulamasını düşün:
+- Her kişinin adı var
+- Her kişinin telefon numarası var
+- Her kişinin email adresi var
+- Belki fotoğrafı var
 
----
+İşte rehber uygulaması aslında küçük bir veritabanı. Bilgileri düzenli tutuyor ve istediğinde kolayca bulmanı sağlıyor.
 
-## 🔗 Tablolar Nasıl Bağlı?
+### Bizim Sistemimiz
 
-Excel'de her şey ayrı dosyalarda olur ve bağlantı kurmak zordur. Burada tablolar birbirine **bağlı**.
-
-Örnek: Bir öğrenci düşün - Ahmet
-
-```
-Ahmet (Öğrenci)
-    │
-    ├── Hangi kursa kayıtlı? → A1 Part 1 kursu
-    │       │
-    │       └── Bu kursta hangi dersler var? → Ders 1, Ders 2, Ders 3...
-    │               │
-    │               └── Her derste hangi ödevler var? → Yazı ödevi, Konuşma ödevi...
-    │
-    ├── Hangi ödevleri tamamladı? → İlerleme tablosunda
-    │
-    ├── Yazdığı metinler? → Yazı Testleri tablosunda
-    │
-    └── Öğretmenle konuşmaları? → Sohbetler tablosunda
-```
-
-Böylece Ahmet'e tıkladığında, onunla ilgili **her şeyi** görebilirsin.
+Biz de aynı mantıkla:
+- Öğrencilerin bilgilerini tutuyoruz
+- Kursların bilgilerini tutuyoruz
+- Derslerin bilgilerini tutuyoruz
+- Ve bunların hepsini birbirine bağlıyoruz
 
 ---
 
-## 📖 Sonraki Adımlar
+## 📋 Tablo Nedir?
 
-Her veritabanının detaylı açıklaması için:
+Tablo, **aynı türden bilgileri sakladığımız bir listedir**.
 
-1. **Önce [[bases/main-app/ACIKLAMA|Ana Uygulama]]'yı oku** - asıl sistem bu
-2. Sonra merak edersen diğerlerine bak
+### Excel Biliyor musun?
+
+Eğer Excel kullandıysan, tablo tam olarak Excel sayfası gibi:
+- **Satırlar** = Her bir kayıt (mesela her bir öğrenci)
+- **Sütunlar** = Bilgi türleri (mesela ad, email, telefon)
+
+### Örnek: Öğrenci Tablosu
+
+| Ad | Email | Telefon | Kursu |
+|----|-------|---------|-------|
+| Ahmet Yılmaz | ahmet@email.com | 555-1234 | A1 |
+| Ayşe Kaya | ayse@email.com | 555-5678 | A2 |
+| Mehmet Demir | mehmet@email.com | 555-9012 | A1 |
+
+Gördüğün gibi:
+- Her **satır** bir öğrenci
+- Her **sütun** bir bilgi türü (buna "alan" veya "field" diyoruz)
 
 ---
 
-## ❓ Sık Sorulan Sorular
+## 🔗 Tablolar Arası Bağlantı Nedir?
 
-### "Tablo" ne demek?
-Excel'deki bir sayfa gibi düşün. Her tabloda satırlar (kayıtlar) ve sütunlar (alanlar) var.
+Bu en önemli kavram. Tablolar birbirine **bağlanabiliyor**.
 
-### "Bağlantı" ne demek?
-Bir tablodaki kayıt, başka tablodaki kayıtla ilişkilendirilebilir. Örneğin "öğrenci" tablosundaki Ahmet, "kurs" tablosundaki A1 kursuyla bağlı.
+### Neden Bağlantı Lazım?
 
-### "AI alanı" ne demek?
-Bazı alanlarda yapay zeka otomatik içerik üretiyor. Örneğin öğrenci bir metin yazdığında, AI otomatik düzeltme ve geri bildirim veriyor.
+Düşün ki sadece 1 tablomuz var ve her şeyi oraya yazıyoruz:
 
-### Neden 4 farklı veritabanı var?
-- Ana sistem (çalışan)
-- Test ortamı (denemeler için)
-- Diğerleri farklı projeler veya eski versiyonlar
+| Öğrenci | Email | Kurs Adı | Kurs Seviyesi | Öğretmen | Öğretmen Email |
+|---------|-------|----------|---------------|----------|----------------|
+| Ahmet | ahmet@email.com | Hollandaca A1 | Başlangıç | Jamila | jamila@okul.com |
+| Ayşe | ayse@email.com | Hollandaca A1 | Başlangıç | Jamila | jamila@okul.com |
+| Mehmet | mehmet@email.com | Hollandaca A2 | Orta | Anne | anne@okul.com |
+
+**Sorunlar:**
+1. "Jamila" ve "jamila@okul.com" tekrar tekrar yazılmış
+2. Jamila'nın emaili değişirse her yerde tek tek değiştirmemiz lazım
+3. Tablo çok karmaşık oluyor
+
+### Çözüm: Ayrı Tablolar + Bağlantı
+
+**Öğrenciler Tablosu:**
+| Ad | Email | Kursu |
+|----|-------|-------|
+| Ahmet | ahmet@email.com | → A1 Kursu |
+| Ayşe | ayse@email.com | → A1 Kursu |
+| Mehmet | mehmet@email.com | → A2 Kursu |
+
+**Kurslar Tablosu:**
+| Kurs Adı | Seviye | Öğretmen |
+|----------|--------|----------|
+| A1 Kursu | Başlangıç | → Jamila |
+| A2 Kursu | Orta | → Anne |
+
+**Öğretmenler Tablosu:**
+| Ad | Email |
+|----|-------|
+| Jamila | jamila@okul.com |
+| Anne | anne@okul.com |
+
+Şimdi:
+- Her bilgi **bir kere** yazılıyor
+- Jamila'nın emaili değişirse **sadece 1 yerde** değiştiriyoruz
+- Her tablo **kendi işine** bakıyor
+
+"→" işareti **bağlantıyı** gösteriyor. Ahmet'in "Kursu" alanı, Kurslar tablosundaki "A1 Kursu"na bağlı.
+
+---
+
+## 🏢 Bizim Sistemimizde Kaç Veritabanı Var?
+
+4 tane ayrı veritabanımız var:
+
+| # | Veritabanı | Ne İçin? | Kaç Tablo? |
+|---|------------|----------|------------|
+| 1 | **Ana Sistem** | Gerçekten kullandığımız sistem | 20 tablo |
+| 2 | Expat Student | Farklı bir proje denemesi | 6 tablo |
+| 3 | Amstel Dutch | Çok basit bir takip sistemi | 1 tablo |
+| 4 | Test Ortamı | Denemeleri yaptığımız yer | 5 tablo |
+
+**En önemlisi "Ana Sistem"** - öğrencilerin ve öğretmenlerin gerçekten kullandığı sistem bu.
+
+---
+
+## 💡 Şimdiye Kadar Ne Öğrendik?
+
+✅ **Veritabanı** = Bilgileri düzenli sakladığımız yer  
+✅ **Tablo** = Aynı türden bilgilerin listesi (Excel sayfası gibi)  
+✅ **Satır** = Tek bir kayıt (mesela bir öğrenci)  
+✅ **Sütun/Alan** = Bir bilgi türü (mesela email)  
+✅ **Bağlantı** = Bir tablodaki kayıt, başka tablodaki kayıtla ilişkilendirilebilir
+
+---
+
+## ➡️ Sonraki Adım
+
+Şimdi asıl sistemi inceleyelim:
+
+**[[bases/main-app/ACIKLAMA|2. Ana Sistem →]]**
